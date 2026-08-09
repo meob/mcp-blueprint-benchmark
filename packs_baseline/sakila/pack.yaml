@@ -1,0 +1,17 @@
+# FROZEN BASELINE (do not edit): v1 domain pack used by benchmark approach B.
+# Snapshot of packs/sakila at the time of the A/B/Bv evaluation, kept only for
+# reproducibility of the recorded results.
+name: sakila
+version: 0.1.0
+engines: [postgresql]
+description: >-
+  Sakila DVD rental store pack.  Tools to recommend films, show full film
+  details and inspect customer rental activity.  Requires the Sakila sample
+  database for PostgreSQL.
+instructions: >-
+  For a rental request, first call search_customer to identify the customer,
+  then get_customer_rentals to check what they still have on loan before
+  recommending new films.  Recommend with search_films (ordered by
+  popularity); prefer categories the customer already rents and avoid films
+  currently on loan.  Use get_film for questions about a specific film.
+  If the customer is not found, say so instead of inventing an account.

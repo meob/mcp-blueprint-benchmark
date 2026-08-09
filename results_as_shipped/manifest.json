@@ -1,0 +1,52 @@
+{
+  "created": "2026-08-05T07:13:33.988669+00:00",
+  "ollama": "ollama version is 0.32.5",
+  "repo_sha": "b386d5828c033495c0d038b4f9e38acccdd0c4d8",
+  "db_fingerprint": {
+    "customers": 599,
+    "films": 1000,
+    "rentals": 16044,
+    "max_rental_id": 16049
+  },
+  "sakila_dsn": "postgresql://meo@localhost:5432/sakila",
+  "ollama_url": "http://localhost:11434/v1/chat/completions",
+  "temperature": 0,
+  "seed": 42,
+  "num_ctx": 8192,
+  "max_steps": 10,
+  "models": [
+    "llama3.2:3b",
+    "qwen2.5:3b",
+    "qwen2.5:7b",
+    "llama3.1:8b"
+  ],
+  "approaches": [
+    "A",
+    "B"
+  ],
+  "tasks": [
+    "find_customer",
+    "rental_history",
+    "good_standing_recommend",
+    "overdue_report",
+    "recommend_category",
+    "recommend_rating",
+    "film_details",
+    "avoid_on_loan",
+    "not_found",
+    "customer_workflow"
+  ],
+  "runs_per_cell": 3,
+  "task_prompts": {
+    "find_customer": "Find the customer whose last name is Smith. Report the customer's full name and customer ID.",
+    "rental_history": "Mary Smith wants to know what she has rented. What films has she rented, and does she currently have any rentals outstanding?",
+    "good_standing_recommend": "Check whether customer Maria Miller has any overdue rentals. If she is in good standing, recommend two Sci-Fi movies.",
+    "overdue_report": "Check whether customer Tammy Sanders has any overdue rentals. If she does, list the films she still has to return.",
+    "recommend_category": "Recommend three popular Family movies for a family movie night.",
+    "recommend_rating": "Recommend two movies rated G, suitable for all ages.",
+    "film_details": "Tell me about the movie 'Goodfellas Salute': its rating, its length in minutes, and how many copies are available.",
+    "avoid_on_loan": "Customer Tammy Sanders is at the counter right now. Recommend one Science Fiction movie that she is not currently renting.",
+    "not_found": "Find the customer whose last name is Doe.",
+    "customer_workflow": "A customer named Jennifer Davis is asking about her account. Check her rental situation and then recommend a Documentary movie she might enjoy."
+  }
+}

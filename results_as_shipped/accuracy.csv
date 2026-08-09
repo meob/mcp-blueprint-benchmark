@@ -1,0 +1,9 @@
+model,approach,n,mean_score,perfect,partial,failed,error_rate
+llama3.1:8b,A,30,0.617,6,24,0,0.0
+llama3.1:8b,B,30,0.733,15,15,0,0.0
+llama3.2:3b,A,30,0.475,3,27,0,0.0
+llama3.2:3b,B,30,0.675,12,18,0,0.0
+qwen2.5:3b,A,30,0.525,3,24,3,0.0
+qwen2.5:3b,B,30,0.661,12,17,1,0.0
+qwen2.5:7b,A,30,0.617,3,27,0,0.0
+qwen2.5:7b,B,30,0.542,9,12,9,0.0
