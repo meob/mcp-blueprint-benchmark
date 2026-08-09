@@ -4,7 +4,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 REPO = Path(os.environ.get("MCP_BENCH_REPO", Path.home() / "AI-Projects" / "MCP_Blueprint"))
 BLUEPRINT_BIN = str(REPO / ".venv" / "bin" / "blueprint")
-SAKILA_DSN = os.environ.get("SAKILA_DSN", "postgresql://meo@localhost:5432/sakila")
+SAKILA_DSN = os.environ.get("SAKILA_DSN", "postgresql://localhost:5432/sakila")
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434/v1/chat/completions")
 OLLAMA_NATIVE_URL = os.environ.get("OLLAMA_NATIVE_URL", "http://localhost:11434/api/chat")
 RESULTS_DIR = ROOT / "results"

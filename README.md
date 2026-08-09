@@ -57,7 +57,7 @@ Environment variables (all optional, sane defaults in `benchmark/config.py`):
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `SAKILA_DSN` | `postgresql://meo@localhost:5432/sakila` | Database connection string |
+| `SAKILA_DSN` | `postgresql://localhost:5432/sakila` | Database connection string |
 | `OLLAMA_URL` | `http://localhost:11434/v1/chat/completions` | OpenAI-compatible endpoint |
 | `OLLAMA_NATIVE_URL` | `http://localhost:11434/api/chat` | Native endpoint (warm-up) |
 | `MCP_BENCH_REPO` | `~/AI-Projects/MCP_Blueprint` | Path to the MCP Blueprint repo (B/Bv) |

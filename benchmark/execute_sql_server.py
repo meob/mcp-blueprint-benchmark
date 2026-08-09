@@ -7,7 +7,7 @@ from mcp.server.fastmcp import FastMCP
 
 mcp = FastMCP("execute_sql")
 
-DSN = os.environ.get("SAKILA_DSN", "postgresql://meo@localhost:5432/sakila")
+DSN = os.environ.get("SAKILA_DSN", "postgresql://localhost:5432/sakila")
 MAX_ROWS = int(os.environ.get("SAKILA_MAX_ROWS", "50"))
 
 _START = re.compile(r"^\s*(SELECT|WITH|VALUES)\b", re.IGNORECASE)
