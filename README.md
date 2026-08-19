@@ -10,8 +10,8 @@ the same backend capability is exposed through different tool designs:
 | Approach | Design | Tool surface |
 | --- | --- | --- |
 | **A** | Raw SQL | A single `execute_sql` tool; the database schema DDL and data notes live in the system prompt |
-| **B** | Generic pack | A blueprint-pack MCP server exposing generic tools (`search_customer`, `search_films`, `get_customer_rentals`, `get_film`) |
-| **Bv** | Verticalized pack | The canonical verticalized pack: domain tools that accept names and titles directly (`customer_account_summary`, `recommend_films`, `film_stock`, ...) |
+| **B** | Verticalized pack | The canonical verticalized MCP-Blueprint pack: domain tools that accept names and titles directly (`customer_account_summary`, `recommend_films`, `film_stock`, ...) |
+| **C** | Generic pack | A blueprint-pack MCP server exposing anti-pattern generic tools (`search_customer`, `search_films`, `get_customer_rentals`, `get_film`) |
 
 ## What it measures
 
@@ -39,7 +39,8 @@ non-existent customers.
 - PostgreSQL with the [Sakila](https://www.postgresqltutorial.com/postgresql-sample-database/)
   sample database
 - [Ollama](https://ollama.com) running locally with models that support tool
-  calling (defaults: `llama3.2:3b`, `qwen2.5:3b`, `qwen2.5:7b`, `llama3.1:8b`)
+  calling (defaults: `llama3.2:3b`, `qwen2.5:3b`, `qwen2.5:7b`, `llama3.1:8b`,
+  plus optional robustness models: `gemma2:2b`, `phi3:mini`)
 - The [MCP Blueprint](https://github.com/) server repo (for approaches B and Bv),
   built with the `blueprint` CLI on PATH or referenced via `MCP_BENCH_REPO`
 
@@ -51,6 +52,8 @@ ollama pull llama3.2:3b
 ollama pull qwen2.5:3b
 ollama pull qwen2.5:7b
 ollama pull llama3.1:8b
+ollama pull gemma2:2b  # Optional robustness model
+ollama pull phi3:mini  # Optional robustness model
 ```
 
 Environment variables (all optional, sane defaults in `benchmark/config.py`):
@@ -68,19 +71,37 @@ Environment variables (all optional, sane defaults in `benchmark/config.py`):
 # Smoke test (2 models, 3 tasks, 2 runs)
 uv run python -m benchmark.run --pilot
 
-# Full matrix
+# Full matrix (540 cells: 4 models × 3 approaches × 15 tasks × 3 repetitions)
 uv run python -m benchmark.run
 
 # Targeted run, resuming previously completed cells
 uv run python -m benchmark.run --models llama3.2:3b --approaches A B --tasks find_customer good_standing_recommend --runs 5 --resume
+
+# Verification and validation
+uv run python -m benchmark.verify  # Run verification checklist
+uv run python -m benchmark.validate  # Validate results consistency
 ```
 
-Options: `--models`, `--approaches {A,B,Bv}`, `--tasks`, `--runs`, `--resume`, `--pilot`.
+Options: `--models`, `--approaches {A,B,C}`, `--tasks`, `--runs`, `--resume`, `--pilot`.
+
+## Benchmark Verification Checklist
+
+Before incorporating results into the paper, complete these verification steps:
+
+1. **Run full benchmark suite** (540 cells) to confirm current results
+2. **Verify no regressions** from v0.5.1 changes
+3. **Check all 15 tasks** scored correctly (spot-check edge cases)
+4. **Validate token counts** are consistent across runs
+5. **Confirm latency measurements** are stable
+6. **Review results discrepancies** between `results/` and `results_as_shipped/`
+7. **Consider additional models** for robustness (e.g., `gemma2:2b`, `phi3:mini`)
 
 ## Repository layout
 
 ```
 benchmark/            Harness: agent loop, tasks, gold answers, report, servers
+benchmark/verify.py   Verification checklist implementation
+benchmark/validate.py Results validation and consistency checks
 config/               Blueprint server config for the frozen baseline pack
 packs_baseline/       Frozen v1 sakila pack (SQL + tool contracts) for approach B
 schema/               sakila DDL used to seed approach A's system prompt
