@@ -1,5 +1,5 @@
-# FROZEN BASELINE (do not edit): v1 domain pack used by benchmark approach B.
-# Snapshot of packs/sakila at the time of the A/B/Bv evaluation, kept only for
+# FROZEN BASELINE (do not edit): v1 domain pack used by benchmark approach C.
+# Snapshot of packs/sakila at the time of the A/B/C evaluation, kept only for
 # reproducibility of the recorded results.
 name: sakila
 version: 0.1.0

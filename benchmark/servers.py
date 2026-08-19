@@ -3,7 +3,7 @@ import os
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
-from .config import B_DESC_FIXES, BLUEPRINT_BIN, REPO, ROOT, SAKILA_DSN
+from .config import C_DESC_FIXES, BLUEPRINT_BIN, REPO, ROOT, SAKILA_DSN
 
 
 def _to_ollama_tool(tool, desc_fix=None):
@@ -39,20 +39,15 @@ class AgentEnv:
 
 
 class ApproachBEnv(AgentEnv):
+    """Approach B: verticalized sakila pack (domain tools)."""
     approach = "B"
-    desc_fixes = B_DESC_FIXES
+    desc_fixes = {}
 
     async def __aenter__(self):
         params = StdioServerParameters(
             command=BLUEPRINT_BIN,
-            args=[
-                "serve",
-                "--config",
-                str(ROOT / "config" / "sakila_baseline.yaml"),
-                "--transport",
-                "stdio",
-            ],
-            cwd=str(ROOT),
+            args=["serve", "--config", str(REPO / "config"), "--transport", "stdio"],
+            cwd=str(REPO),
             env={
                 **os.environ,
                 "MCP_BLUEPRINT_DATABASE_ENGINE": "postgresql",
@@ -81,15 +76,22 @@ class ApproachBEnv(AgentEnv):
         return _result_text(result)
 
 
-class ApproachBvEnv(ApproachBEnv):
-    approach = "Bv"
-    desc_fixes = {}
+class ApproachCEnv(AgentEnv):
+    """Approach C: generic pack with anti-pattern tools."""
+    approach = "C"
+    desc_fixes = C_DESC_FIXES
 
     async def __aenter__(self):
         params = StdioServerParameters(
             command=BLUEPRINT_BIN,
-            args=["serve", "--config", str(REPO / "config"), "--transport", "stdio"],
-            cwd=str(REPO),
+            args=[
+                "serve",
+                "--config",
+                str(ROOT / "config" / "sakila_baseline.yaml"),
+                "--transport",
+                "stdio",
+            ],
+            cwd=str(ROOT),
             env={
                 **os.environ,
                 "MCP_BLUEPRINT_DATABASE_ENGINE": "postgresql",
@@ -106,6 +108,7 @@ class ApproachBvEnv(ApproachBEnv):
 
 
 class ApproachAEnv(AgentEnv):
+    """Approach A: raw SQL via execute_sql tool."""
     approach = "A"
 
     async def __aenter__(self):

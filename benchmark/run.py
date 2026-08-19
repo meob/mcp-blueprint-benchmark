@@ -12,7 +12,7 @@ from .agent_loop import run_agent, warm_up
 from .config import (
     APPROACH_A_SYSTEM,
     APPROACH_B_SYSTEM,
-    APPROACH_BV_SYSTEM,
+    APPROACH_C_SYSTEM,
     MODELS,
     MAX_STEPS,
     NUM_CTX,
@@ -24,11 +24,11 @@ from .config import (
     SEED,
     TEMPERATURE,
 )
-from .servers import ApproachAEnv, ApproachBEnv, ApproachBvEnv
+from .servers import ApproachAEnv, ApproachBEnv, ApproachCEnv
 from .tasks import TASK_IDS, TASKS, compute_gold, run_checks
 
-ENVS = {"A": ApproachAEnv, "B": ApproachBEnv, "Bv": ApproachBvEnv}
-SYSTEMS = {"A": APPROACH_A_SYSTEM, "B": APPROACH_B_SYSTEM, "Bv": APPROACH_BV_SYSTEM}
+ENVS = {"A": ApproachAEnv, "B": ApproachBEnv, "C": ApproachCEnv}
+SYSTEMS = {"A": APPROACH_A_SYSTEM, "B": APPROACH_B_SYSTEM, "C": APPROACH_C_SYSTEM}
 
 
 def db_fingerprint():
@@ -164,7 +164,7 @@ async def main(args):
 def parse_args():
     p = argparse.ArgumentParser(description="Sakila MCP benchmark")
     p.add_argument("--models", nargs="*", default=None)
-    p.add_argument("--approaches", nargs="*", default=None, choices=["A", "B", "Bv"])
+    p.add_argument("--approaches", nargs="*", default=None, choices=["A", "B", "C"])
     p.add_argument("--tasks", nargs="*", default=None)
     p.add_argument("--runs", type=int, default=3)
     p.add_argument("--resume", action="store_true", help="skip cells already written to results/")

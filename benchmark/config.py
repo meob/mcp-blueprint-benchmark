@@ -13,6 +13,8 @@ SCHEMA_DDL = (ROOT / "schema" / "sakila_ddl.sql").read_text()
 MODELS = [
     {"name": "llama3.2:3b", "tier": "SLM"},
     {"name": "qwen2.5:3b", "tier": "SLM"},
+    {"name": "gemma2:2b", "tier": "SLM"},
+    {"name": "phi3:mini", "tier": "SLM"},
     {"name": "qwen2.5:7b", "tier": "medium"},
     {"name": "llama3.1:8b", "tier": "medium"},
 ]
@@ -51,41 +53,15 @@ APPROACH_A_SYSTEM = (
 )
 
 # Prompt revision marker. v2 levels both interfaces with documented
-# contracts: approach A gets the data/schema notes above, approach B gets
-# the clarified tool descriptions in B_DESC_FIXES.
+# contracts: approach A gets the data/schema notes above, approach C gets
+# the clarified tool descriptions in C_DESC_FIXES.
 PROMPT_VERSION = "v2"
 
-APPROACH_B_SYSTEM = (
-    "You are a helpful assistant for a DVD rental store. You have access to "
-    "tools to search customers, inspect a customer's rentals, search films "
-    "and get film details. Use the tools to answer the user's question "
-    "accurately. Return a concise, correct final answer in plain text."
-)
-
-# Documentation clarifications applied to the tool descriptions that the
-# model sees in approach B ("B clarified"). The underlying server and SQL
-# are untouched; only the prompt-level tool contract is made explicit, so
-# the approach is not penalised by underspecified input semantics.
-B_DESC_FIXES = {
-    "search_customer": (
-        " IMPORTANT: the 'name' parameter must be a single first or last "
-        "name (for example 'Smith' or 'Tammy'). Do NOT pass a full name "
-        "such as 'Tammy Sanders'."
-    ),
-    "search_films": (
-        " IMPORTANT: 'category' is an exact match on the category name. "
-        "Valid values: Action, Animation, Children, Classics, Comedy, "
-        "Documentary, Drama, Family, Foreign, Games, Horror, Music, New, "
-        "Sci-Fi, Sports, Travel. An unknown category name returns no results."
-    ),
-}
-
-# Approach "Bv": the verticalized sakila pack (canonical example).  Domain
+# Approach B: the verticalized sakila pack (canonical example).  Domain
 # logic (entity resolution, account assembly, recommendations, per-store
 # stock) is pushed into the tools, which accept names and titles directly,
 # so the model picks a tool instead of chaining several generic lookups.
-# Approach B loads the frozen v1 baseline from packs_baseline/ instead.
-APPROACH_BV_SYSTEM = (
+APPROACH_B_SYSTEM = (
     "You are a helpful assistant for a DVD rental store. You have access to "
     "a small set of domain tools: customer_account_summary(customer_name) "
     "returns a customer's account (contact info, home store, standing, how "
@@ -101,4 +77,31 @@ APPROACH_BV_SYSTEM = (
     "question and return a concise, correct final answer in plain text."
 )
 
-SYSTEM_PROMPTS = {"A": APPROACH_A_SYSTEM, "B": APPROACH_B_SYSTEM, "Bv": APPROACH_BV_SYSTEM}
+# Approach C: generic pack with anti-pattern tools.  The underlying server
+# and SQL are untouched; only the prompt-level tool contract is made
+# explicit via C_DESC_FIXES so the approach is not penalised by
+# underspecified input semantics.
+APPROACH_C_SYSTEM = (
+    "You are a helpful assistant for a DVD rental store. You have access to "
+    "tools to search customers, inspect a customer's rentals, search films "
+    "and get film details. Use the tools to answer the user's question "
+    "accurately. Return a concise, correct final answer in plain text."
+)
+
+# Documentation clarifications applied to the tool descriptions that the
+# model sees in approach C ("C clarified").
+C_DESC_FIXES = {
+    "search_customer": (
+        " IMPORTANT: the 'name' parameter must be a single first or last "
+        "name (for example 'Smith' or 'Tammy'). Do NOT pass a full name "
+        "such as 'Tammy Sanders'."
+    ),
+    "search_films": (
+        " IMPORTANT: 'category' is an exact match on the category name. "
+        "Valid values: Action, Animation, Children, Classics, Comedy, "
+        "Documentary, Drama, Family, Foreign, Games, Horror, Music, New, "
+        "Sci-Fi, Sports, Travel. An unknown category name returns no results."
+    ),
+}
+
+SYSTEM_PROMPTS = {"A": APPROACH_A_SYSTEM, "B": APPROACH_B_SYSTEM, "C": APPROACH_C_SYSTEM}

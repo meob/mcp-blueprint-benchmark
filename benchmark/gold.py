@@ -3,7 +3,7 @@ from jinja2 import Template
 
 from .config import ROOT, SAKILA_DSN
 
-# Baseline sakila pack (v1) is frozen inside this repository so approach A/B
+# Baseline sakila pack (v1) is frozen inside this repository so approach A/B/C
 # scoring stays reproducible even though the canonical pack in the main repo
 # has since been replaced by the verticalized one.
 PACK_SQL = ROOT / "packs_baseline" / "sakila" / "sql"

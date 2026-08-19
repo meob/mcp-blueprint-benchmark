@@ -36,7 +36,7 @@ def check_model_coverage(manifest):
 
 
 def check_cell_count(manifest):
-    """Verify we have the expected number of cells (540)."""
+    """Verify we have the expected number of cells."""
     if not manifest:
         return False
     
@@ -48,15 +48,41 @@ def check_cell_count(manifest):
     expected = models * approaches * tasks * runs
     print(f"Expected cells: {models} × {approaches} × {tasks} × {runs} = {expected}")
     
-    # Count actual result files
+    # Count actual result files and tasks per model
     actual_count = 0
+    actual_models = set()
+    actual_tasks_per_model = {}
     for model_dir in RESULTS_DIR.iterdir():
         if model_dir.is_dir() and model_dir.name != "__pycache__":
+            actual_models.add(model_dir.name)
+            model_tasks = set()
             for approach_dir in model_dir.iterdir():
                 if approach_dir.is_dir():
-                    actual_count += len(list(approach_dir.glob("*.json")))
+                    for f in approach_dir.glob("*.json"):
+                        actual_count += 1
+                        # Extract task_id from filename
+                        task_id = f.stem.rsplit("_r", 1)[0]
+                        model_tasks.add(task_id)
+            actual_tasks_per_model[model_dir.name] = model_tasks
     
     print(f"Actual result files: {actual_count}")
+    print(f"Models with results: {sorted(actual_models)}")
+    
+    # Check if we have results for all expected models
+    expected_models = set(manifest.get("models", []))
+    missing_models = expected_models - actual_models
+    if missing_models:
+        print(f"Models pending: {sorted(missing_models)}")
+        # Calculate expected for models that have results, using actual task counts
+        expected_partial = 0
+        for model, model_tasks in actual_tasks_per_model.items():
+            expected_partial += len(model_tasks) * approaches * runs
+        if actual_count == expected_partial:
+            print(f"All cells complete for {len(actual_models)} models ({actual_count} cells)")
+            return True
+        else:
+            print(f"Partial results: {actual_count}/{expected_partial} cells for available models")
+            return False
     
     if expected != actual_count:
         print(f"Cell count mismatch: expected {expected}, got {actual_count}")

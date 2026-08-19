@@ -60,7 +60,7 @@ def any_account_tool(run):
 
 
 def account_workflow(run, approach):
-    if approach == "Bv":
+    if approach == "B":
         return any_account_tool(run)
     return (
         tool_order(run, ["search_customer", "customer_account_summary"])
@@ -70,7 +70,7 @@ def account_workflow(run, approach):
 
 
 def rec_workflow(run, approach):
-    if approach == "Bv":
+    if approach == "B":
         return tool_called(run, "recommend_films")
     return tool_order(run, ["search_customer", "recommend_films"])
 
@@ -136,6 +136,14 @@ TASKS = [
         "id": "service_case",
         "prompt": "Customer Tammy Sanders is calling about late fees. Check her account: which films are currently on loan, which of those are overdue, and what is her home store so the store can reach out to her?",
     },
+    {
+        "id": "rental_empty",
+        "prompt": "Show me the rental history for customer ID 9999.",
+    },
+    {
+        "id": "not_rented",
+        "prompt": "Which Science Fiction movies has Mary Smith NOT rented before?",
+    },
 ]
 
 TASK_IDS = [t["id"] for t in TASKS]
@@ -176,6 +184,10 @@ def compute_gold(task_id):
         return {"g": G.all_g()}
     if task_id == "service_case":
         return {"customer": G.search_customer("Sanders")[0], "rentals": G.get_customer_rentals(75)}
+    if task_id == "rental_empty":
+        return {"rentals": []}
+    if task_id == "not_rented":
+        return {"customer": G.search_customer("Smith")[0], "rentals": G.get_customer_rentals(1), "scifi": G.search_films(category="Sci-Fi")}
     raise KeyError(task_id)
 
 
@@ -187,21 +199,26 @@ def run_checks(task_id, run, gold):
     if task_id == "find_customer":
         checks.append(check("tool_used", tool_called(run, "search_customer") or tool_called(run, "execute_sql")))
         checks.append(check("customer_found", "SMITH" in _up(answer), answer[:120]))
-        checks.append(check("customer_id", "1" in answer or "MARY SMITH" in _up(answer), answer[:120]))
+        checks.append(check("customer_id", re.search(r"\bcustomer\s*(?:id|#|number)\s*[:=]?\s*1\b", _up(answer)) is not None or "MARY SMITH" in _up(answer), answer[:120]))
 
     elif task_id == "rental_history":
         checks.append(check("tool_used", any_account_tool(run) or tool_called(run, "execute_sql")))
         titles = _titles(gold["rentals"])
         matched = _distinct_matches(answer, titles)
         checks.append(check("lists_films", len(matched) >= 3, f"{len(matched)} matched"))
+        has_open = any(r["status"] in ("active", "overdue") for r in gold["rentals"])
+        if has_open:
+            checks.append(check("mentions_outstanding", re.search(r"still (?:has|have|on|renting|holding|checked? out)|outstanding|not returned|on loan|currently rented|hasn'?t returned", answer, re.I) is not None, answer[:120]))
+        else:
+            checks.append(check("mentions_all_returned", re.search(r"all returned|nothing (?:outstanding|on loan|pending)|no (?:outstanding|open|active)|returned everything", answer, re.I) is not None, answer[:120]))
 
     elif task_id == "good_standing_recommend":
         checks.append(check("tool_used", tool_called(run, "search_films") or tool_called(run, "recommend_films") or any_account_tool(run) or tool_called(run, "execute_sql")))
-        checks.append(check("standing_reported", re.search(r"good standing|no overdue|not overdue|no late|no outstanding", answer, re.I) is not None, answer[:120]))
+        checks.append(check("standing_reported", re.search(r"good standing|no overdue|not overdue|no late|no outstanding|in good|clear|no issues|all clear|no pending", answer, re.I) is not None, answer[:120]))
         scifi = _titles(gold["scifi"])
         matched = _distinct_matches(answer, scifi)
         checks.append(check("two_scifi", len(matched) >= 2, f"{matched[:5]}"))
-        if approach in ("B", "Bv"):
+        if approach in ("B", "C"):
             checks.append(check("workflow", account_workflow(run, approach)))
 
     elif task_id == "overdue_report":
@@ -215,7 +232,7 @@ def run_checks(task_id, run, gold):
         checks.append(check("tool_used", tool_called(run, "search_films") or tool_called(run, "recommend_films") or tool_called(run, "execute_sql")))
         family = _titles(gold["family"])
         matched = _distinct_matches(answer, family)
-        checks.append(check("three_family", len(matched) >= 2, f"{matched[:5]}"))
+        checks.append(check("three_family", len(matched) >= 3, f"{matched[:5]}"))
 
     elif task_id == "recommend_rating":
         checks.append(check("tool_used", tool_called(run, "search_films") or tool_called(run, "recommend_films") or tool_called(run, "execute_sql")))
@@ -226,7 +243,7 @@ def run_checks(task_id, run, gold):
     elif task_id == "film_details":
         checks.append(check("tool_used", tool_called(run, "get_film") or tool_called(run, "search_films") or tool_called(run, "film_stock") or tool_called(run, "execute_sql")))
         checks.append(check("rating_pg", re.search(r"\bPG\b", answer) is not None, answer[:120]))
-        checks.append(check("length_56", "56" in answer, answer[:120]))
+        checks.append(check("length_56", re.search(r"\b56\b\s*(?:min(?:ute)?s?|m\b|minutes?)?", _up(answer)) is not None, answer[:120]))
         checks.append(check("availability", re.search(r"available|in stock|on the shelf", answer, re.I) is not None, answer[:120]))
 
     elif task_id == "avoid_on_loan":
@@ -236,7 +253,7 @@ def run_checks(task_id, run, gold):
         allowed = [t for t in scifi if _up(t) not in open_titles]
         matched = _distinct_matches(answer, allowed)
         checks.append(check("not_on_loan", len(matched) >= 1, f"{matched[:5]}"))
-        if approach in ("B", "Bv"):
+        if approach in ("B", "C"):
             checks.append(check("checked_rentals", tool_called(run, "get_customer_rentals") or rec_workflow(run, approach)))
 
     elif task_id == "not_found":
@@ -251,7 +268,7 @@ def run_checks(task_id, run, gold):
         doc = _titles(gold["doc"])
         matched = _distinct_matches(answer, doc)
         checks.append(check("documentary", len(matched) >= 1, f"{matched[:5]}"))
-        if approach in ("B", "Bv"):
+        if approach in ("B", "C"):
             checks.append(check("workflow", account_workflow(run, approach)))
 
     elif task_id == "upsell_seen":
@@ -261,13 +278,17 @@ def run_checks(task_id, run, gold):
         allowed = [t for t in scifi if _up(t) not in seen]
         matched = _distinct_matches(answer, allowed)
         checks.append(check("two_unseen_scifi", len(matched) >= 2, f"{matched[:5]}"))
-        if approach in ("B", "Bv"):
+        if approach in ("B", "C"):
             checks.append(check("workflow", tool_order(run, ["search_customer", "get_customer_rentals"]) or rec_workflow(run, approach)))
 
     elif task_id == "return_verify":
         checks.append(check("tool_used", any_account_tool(run) or tool_called(run, "execute_sql")))
-        checks.append(check("all_clear", re.search(r"no (rentals|films|items|outstanding|open|active|loans?) on loan|no (rentals|films|items|outstanding|open|active|loans?)|does ?not have any|doesn'?t have any|all returned|all clear|nothing (on loan|outstanding)|none (on loan|outstanding)|has returned everything|no longer has|open_films[^A-Z]{0,20}NONE", answer, re.I) is not None, answer[:120]))
-        if approach in ("B", "Bv"):
+        open_titles = [r for r in gold["rentals"] if r["status"] in ("active", "overdue")]
+        if open_titles:
+            checks.append(check("has_outstanding", re.search(r"still (?:has|have|on|renting|holding|checked? out)|outstanding|not returned|on loan|hasn'?t returned|does not appear", answer, re.I) is not None, answer[:120]))
+        else:
+            checks.append(check("all_clear", re.search(r"no (?:rentals?|films?|items?|outstanding|open|active|loans?) (?:on loan|outstanding|pending|active)|has returned|all clear|nothing (?:on loan|outstanding|pending)|does ?not have any|doesn'?t have any", answer, re.I) is not None, answer[:120]))
+        if approach in ("B", "C"):
             checks.append(check("workflow", account_workflow(run, approach)))
 
     elif task_id == "store_availability":
@@ -294,8 +315,24 @@ def run_checks(task_id, run, gold):
         checks.append(check("lists_open", len(matched) >= 2, f"{matched} of {open_titles}"))
         checks.append(check("overdue_stated", re.search(r"overdue|late|past due", answer, re.I) is not None, answer[:120]))
         checks.append(check("home_store", re.search(r"STORE[^0-9]{0,5}2", _up(answer)) is not None or "CHANGHWA" in _up(answer), answer[:120]))
-        if approach in ("B", "Bv"):
+        if approach in ("B", "C"):
             checks.append(check("workflow", account_workflow(run, approach)))
+
+    elif task_id == "rental_empty":
+        checks.append(check("tool_used", any_account_tool(run) or tool_called(run, "execute_sql")))
+        not_found_re = r"not found|no customer|no match|does not exist|no results|no rentals|no records|doesn'?t exist|couldn'?t find|no one"
+        checks.append(check("no_customer", re.search(not_found_re, answer, re.I) is not None, answer[:120]))
+        checks.append(check("no_fabrication", not re.search(r"rented|film|movie|title", answer, re.I) or re.search(not_found_re, answer, re.I) is not None, answer[:120]))
+
+    elif task_id == "not_rented":
+        checks.append(check("tool_used", tool_called(run, "search_films") or tool_called(run, "recommend_films") or tool_called(run, "execute_sql")))
+        scifi = _titles(gold["scifi"])
+        seen = {_up(t) for t in _titles(gold["rentals"])}
+        not_seen = [t for t in scifi if _up(t) not in seen]
+        matched = _distinct_matches(answer, not_seen)
+        checks.append(check("two_unseen_scifi", len(matched) >= 2, f"{matched[:5]}"))
+        if approach in ("B", "C"):
+            checks.append(check("workflow", tool_order(run, ["search_customer", "get_customer_rentals"]) or rec_workflow(run, approach)))
 
     score = sum(1 for c in checks if c["passed"]) / len(checks) if checks else 0.0
     return checks, round(score, 3)

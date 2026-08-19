@@ -39,9 +39,9 @@ non-existent customers.
 - PostgreSQL with the [Sakila](https://www.postgresqltutorial.com/postgresql-sample-database/)
   sample database
 - [Ollama](https://ollama.com) running locally with models that support tool
-  calling (defaults: `llama3.2:3b`, `qwen2.5:3b`, `qwen2.5:7b`, `llama3.1:8b`,
-  plus optional robustness models: `gemma2:2b`, `phi3:mini`)
-- The [MCP Blueprint](https://github.com/) server repo (for approaches B and Bv),
+  calling (defaults: `llama3.2:3b`, `qwen2.5:3b`, `gemma2:2b`, `phi3:mini`,
+  `qwen2.5:7b`, `llama3.1:8b`)
+- The [MCP Blueprint](https://github.com/) server repo (for approaches B and C),
   built with the `blueprint` CLI on PATH or referenced via `MCP_BENCH_REPO`
 
 ## Setup
@@ -50,10 +50,10 @@ non-existent customers.
 uv sync
 ollama pull llama3.2:3b
 ollama pull qwen2.5:3b
+ollama pull gemma2:2b
+ollama pull phi3:mini
 ollama pull qwen2.5:7b
 ollama pull llama3.1:8b
-ollama pull gemma2:2b  # Optional robustness model
-ollama pull phi3:mini  # Optional robustness model
 ```
 
 Environment variables (all optional, sane defaults in `benchmark/config.py`):
@@ -63,7 +63,7 @@ Environment variables (all optional, sane defaults in `benchmark/config.py`):
 | `SAKILA_DSN` | `postgresql://localhost:5432/sakila` | Database connection string |
 | `OLLAMA_URL` | `http://localhost:11434/v1/chat/completions` | OpenAI-compatible endpoint |
 | `OLLAMA_NATIVE_URL` | `http://localhost:11434/api/chat` | Native endpoint (warm-up) |
-| `MCP_BENCH_REPO` | `~/AI-Projects/MCP_Blueprint` | Path to the MCP Blueprint repo (B/Bv) |
+| `MCP_BENCH_REPO` | `~/AI-Projects/MCP_Blueprint` | Path to the MCP Blueprint repo (approaches B and C) |
 
 ## Usage
 
@@ -71,7 +71,7 @@ Environment variables (all optional, sane defaults in `benchmark/config.py`):
 # Smoke test (2 models, 3 tasks, 2 runs)
 uv run python -m benchmark.run --pilot
 
-# Full matrix (540 cells: 4 models × 3 approaches × 15 tasks × 3 repetitions)
+# Full matrix (810 cells: 6 models × 3 approaches × 15 tasks × 3 repetitions)
 uv run python -m benchmark.run
 
 # Targeted run, resuming previously completed cells
@@ -88,7 +88,7 @@ Options: `--models`, `--approaches {A,B,C}`, `--tasks`, `--runs`, `--resume`, `-
 
 Before incorporating results into the paper, complete these verification steps:
 
-1. **Run full benchmark suite** (540 cells) to confirm current results
+1. **Run full benchmark suite** (810 cells) to confirm current results
 2. **Verify no regressions** from v0.5.1 changes
 3. **Check all 15 tasks** scored correctly (spot-check edge cases)
 4. **Validate token counts** are consistent across runs
@@ -103,7 +103,7 @@ benchmark/            Harness: agent loop, tasks, gold answers, report, servers
 benchmark/verify.py   Verification checklist implementation
 benchmark/validate.py Results validation and consistency checks
 config/               Blueprint server config for the frozen baseline pack
-packs_baseline/       Frozen v1 sakila pack (SQL + tool contracts) for approach B
+packs_baseline/       Frozen v1 sakila pack (SQL + tool contracts) for approach C
 schema/               sakila DDL used to seed approach A's system prompt
 results/              Generated run output (git-ignored)
 results_as_shipped/   Frozen snapshot of an earlier run

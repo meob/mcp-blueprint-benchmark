@@ -1,7 +1,7 @@
-# Approach-B server configuration.
+# Approach-C server configuration.
 #
 # Loads the frozen v1 sakila pack from packs_baseline/ (relative to the
-# benchmark repo root) so the approach-B environment is self-contained and
+# benchmark repo root) so the approach-C environment is self-contained and
 # reproducible.  Database settings come from the MCP_BLUEPRINT_* environment
 # variables set by benchmark/servers.py.
 server:
