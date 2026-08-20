@@ -139,6 +139,11 @@ uv run python -m benchmark.validate  # Validate results consistency
 
 Options: `--models`, `--approaches {A,B,C}`, `--tasks`, `--runs`, `--resume`, `--pilot`.
 
+**Execution time:** the full matrix takes **~3–4 hours** on a MacBook Pro M3 Pro
+(18 GB RAM). Individual cells average ~18 s wall time, but overhead from MCP
+server startup and model warm-up adds ~30%. The `--resume` flag is recommended
+for long runs — it skips already-completed cells.
+
 ## Repository layout
 
 ```
