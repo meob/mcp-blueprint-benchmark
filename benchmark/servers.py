@@ -106,6 +106,19 @@ class ApproachCEnv(AgentEnv):
         self.tools = (await self._session.list_tools()).tools
         return self
 
+    async def __aexit__(self, *exc):
+        for closer in (self._session, self._stack):
+            try:
+                await closer.__aexit__(*exc)
+            except BaseException:
+                pass
+
+    async def call_tool(self, name, arguments):
+        result = await self._session.call_tool(name, arguments=arguments)
+        if result.isError:
+            raise ValueError(_result_text(result) or "tool error")
+        return _result_text(result)
+
 
 class ApproachAEnv(AgentEnv):
     """Approach A: raw SQL via execute_sql tool."""

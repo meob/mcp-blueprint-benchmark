@@ -28,10 +28,10 @@ of an earlier run lives in `results_as_shipped/`.
 
 ## Tasks
 
-15 tasks (`benchmark/tasks.py`) covering the storefront workflow: finding
+17 tasks (`benchmark/tasks.py`) covering the storefront workflow: finding
 customers, rental history, overdue reports, good-standing checks,
-recommendations by category/rating, per-store film stock, and refusal of
-non-existent customers.
+recommendations by category/rating, per-store film stock, refusal of
+non-existent customers, and negative queries.
 
 ## Requirements
 
@@ -39,8 +39,7 @@ non-existent customers.
 - PostgreSQL with the [Sakila](https://www.postgresqltutorial.com/postgresql-sample-database/)
   sample database
 - [Ollama](https://ollama.com) running locally with models that support tool
-  calling (defaults: `llama3.2:3b`, `qwen2.5:3b`, `gemma2:2b`, `phi3:mini`,
-  `qwen2.5:7b`, `llama3.1:8b`)
+  calling (defaults: `llama3.2:3b`, `qwen2.5:3b`, `qwen2.5:7b`, `llama3.1:8b`)
 - The [MCP Blueprint](https://github.com/) server repo (for approaches B and C),
   built with the `blueprint` CLI on PATH or referenced via `MCP_BENCH_REPO`
 
@@ -71,7 +70,7 @@ Environment variables (all optional, sane defaults in `benchmark/config.py`):
 # Smoke test (2 models, 3 tasks, 2 runs)
 uv run python -m benchmark.run --pilot
 
-# Full matrix (810 cells: 6 models × 3 approaches × 15 tasks × 3 repetitions)
+# Full matrix (612 cells: 4 models × 3 approaches × 17 tasks × 3 repetitions)
 uv run python -m benchmark.run
 
 # Targeted run, resuming previously completed cells

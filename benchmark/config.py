@@ -13,15 +13,15 @@ SCHEMA_DDL = (ROOT / "schema" / "sakila_ddl.sql").read_text()
 MODELS = [
     {"name": "llama3.2:3b", "tier": "SLM"},
     {"name": "qwen2.5:3b", "tier": "SLM"},
-    {"name": "gemma2:2b", "tier": "SLM"},
-    {"name": "phi3:mini", "tier": "SLM"},
     {"name": "qwen2.5:7b", "tier": "medium"},
     {"name": "llama3.1:8b", "tier": "medium"},
 ]
 
 # Excluded local models (no tool-calling support via Ollama):
-#   llama3:8b       -> Ollama API returns 400 "does not support tools"
+#   llama3:8b        -> Ollama API returns 400 "does not support tools"
 #   qwen2.5-coder:7b -> no tool template; emits the JSON tool call as plain text
+#   gemma2:2b        -> Ollama API returns 400 "does not support tools"
+#   phi3:mini        -> Ollama API returns 400 "does not support tools"
 
 # Effective generation context: the /v1/chat/completions endpoint ignores
 # options.num_ctx and reloads the model at the Ollama default (4096), which
