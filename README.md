@@ -40,6 +40,30 @@ Results are written as per-cell JSON under `results/` and aggregated into
 `results/summary.md`. A frozen snapshot of an earlier run lives in
 `results_as_shipped/`.
 
+## Methodology
+
+**Scoring is rule-based**, not LLM-judged. Each task defines a check set in
+`benchmark/tasks.py`; gold answers are computed live from the database
+(`benchmark/gold.py`). For every cell:
+
+- `score = passed_checks / total_checks` (range 0.0–1.0)
+- `perfect = 1.0` when all checks pass
+- Fuzzy string matching uses `SequenceMatcher` with threshold `≥ 0.72`
+- Workflow checks (tool-call sequences, argument validation) apply only to
+  approaches B and C; approach A is scored solely on the final answer text
+
+**Protocol:** temperature 0, seed 42, `num_ctx` 8192, `max_steps` 10.
+Each cell is repeated 3 times independently. The full matrix is
+4 models × 3 approaches × 17 tasks × 3 reps = 612 cells.
+
+**Limitations:**
+
+- 3 cells missing (`qwen2.5:3b` / `service_case` / approach A — stdio pipe hang)
+- Single domain (DVD rental), small schema (6 tables in prompt)
+- Fuzzy threshold (0.72) is a hyperparameter tuned for this task set
+- `results_as_shipped/` reflects an earlier configuration (10 tasks, A+B only,
+  `num_ctx` 8192)
+
 ## Tasks
 
 17 tasks (`benchmark/tasks.py`) covering the storefront workflow: finding
