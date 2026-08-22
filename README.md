@@ -22,8 +22,8 @@ Key findings (609 cells, 4 models × 3 approaches × 17 tasks × 3 reps):
 | Approach | Mean Score | Perfect | Tokens | Latency |
 | --- | --- | --- | --- | --- |
 | **B (Verticalized)** | **93.9%** | 85% | 3,056 | 4.4s |
-| A (Raw SQL) | 66.6% | 33% | 4,583 | 17.6s |
-| C (Generic) | 60.5% | 31% | 3,287 | 6.4s |
+| A (Raw SQL) | 66.6% | 33% | 3,953 | 17.3s |
+| C (Generic) | 60.5% | 31% | 2,894 | 6.4s |
 
 Figures are available in [`figures/`](figures/) (PNG + PDF).
 
