@@ -98,7 +98,7 @@ non-existent customers, and negative queries.
   sample database
 - [Ollama](https://ollama.com) running locally with models that support tool
   calling
-- The [MCP Blueprint](https://github.com/) server repo (for approaches B and C),
+- The [MCP Blueprint](https://github.com/meob/mcp-blueprint) server repo (for approaches B and C),
   built with the `blueprint` CLI on PATH or referenced via `MCP_BENCH_REPO`
 
 ## Setup
